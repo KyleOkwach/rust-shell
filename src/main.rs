@@ -47,7 +47,7 @@ fn main() {
                 if builtin_commands.contains(cmd.as_str()) {
                     println!("{} is a shell builtin", cmd)
                 } else {
-                    println!("{}: command not found", cmd)
+                    println!("{}: not found", cmd)
                 }
             },
             Command::CmdExit => {
