@@ -10,6 +10,10 @@ fn main() {
         io::stdin()
             .read_line(&mut input)
             .unwrap();
-        println!("{}: command not found", input.trim()); 
+        let command = input.trim();
+
+        if command == "exit" { break };
+
+        println!("{}: command not found", command); 
     }
 }
