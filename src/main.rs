@@ -1,6 +1,8 @@
 #[allow(unused_imports)]
 use std::collections::HashSet;
 use std::io::{self, Write};
+use std::env;
+use std::path::{Path, PathBuf};
 
 enum Command {
     CmdEcho(String),
@@ -21,6 +23,20 @@ fn get_command(s: &str) -> Command {
     }
 }
 
+fn find_executable<P: AsRef<Path>>(exe_name: P) -> Option<PathBuf> {
+    // Get system's PATH environment variable
+    env::var_os("PATH").and_then(|paths| {
+        env::split_paths(&paths)
+            .filter_map(|dir| {
+                let full_path = dir.join(&exe_name);
+                if full_path.is_file(){
+                    Some(full_path)
+                } else {
+                    None
+                }
+            }).next()
+    })
+}
 
 fn main() {
     let builtin_commands: HashSet<&str> = vec!["echo", "exit", "type"].into_iter().collect();
@@ -46,6 +62,9 @@ fn main() {
             Command::CmdType(cmd) => {
                 if builtin_commands.contains(cmd.as_str()) {
                     println!("{} is a shell builtin", cmd)
+                } else if let Some(path) = find_executable(cmd.as_str()){
+                    // Get path
+                    println!("{} is {:?}", cmd, path);
                 } else {
                     println!("{}: not found", cmd)
                 }
