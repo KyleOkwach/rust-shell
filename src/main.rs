@@ -26,7 +26,10 @@ fn main() {
             },
             Command::CmdPwd => {
                 let curr_dir = std::env::current_dir().unwrap();
-                println!("{:?}", curr_dir);
+            
+                if let Some(path_str) = curr_dir.to_str() {
+                    println!("{}", path_str);
+                }
             }
             Command::CmdInvalid(cmd) => {
                 println!("{}: command not found", cmd)
