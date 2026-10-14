@@ -64,7 +64,7 @@ fn main() {
                     println!("{} is a shell builtin", cmd)
                 } else if let Some(path) = find_executable(cmd.as_str()){
                     // Get path
-                    println!("{} is {:?}", cmd, path);
+                    println!("{} is {}", cmd, path.display());
                 } else {
                     println!("{}: not found", cmd)
                 }
