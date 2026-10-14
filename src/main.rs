@@ -1,58 +1,10 @@
 #[allow(unused_imports)]
-use std::os::unix::fs::PermissionsExt;
+mod executable;
+mod command;
+
 use std::collections::HashSet;
 use std::io::{self, Write};
-use std::env;
-use std::path::{Path, PathBuf};
-
-enum Command<'a> {
-    CmdEcho(String),
-    CmdInvalid(String),
-    CmdExecutable(String, Vec<&'a str>),
-    CmdType(String),
-    CmdExit,
-}
-
-
-fn get_command(s: &str) -> Command<'_> {
-    let line_collection: Vec<&str> = s.split_whitespace().collect();
-    let cmd = line_collection[0];
-    let args: Vec<&str> = line_collection[1..].to_vec();
-    match cmd {
-        "echo"  => Command::CmdEcho(line_collection[1..].join(" ")),
-        "exit"  => Command::CmdExit,
-        "type"  => Command::CmdType(String::from(line_collection[1])),
-        _       => {
-            if let Some(path) = find_executable(line_collection[0]) {
-                let path_string = path.to_string_lossy().into_owned();
-                Command::CmdExecutable(path_string, args)
-            } else {
-                Command::CmdInvalid(String::from(cmd))
-            }
-        },
-    }
-}
-
-fn find_executable<P: AsRef<Path>>(exe_name: P) -> Option<PathBuf> {
-    // Get system's PATH environment variable
-    env::var_os("PATH").and_then(|paths| {
-        env::split_paths(&paths)
-            .filter_map(|dir| {
-                let full_path = dir.join(&exe_name);
-                
-                if let Ok(metadata) = full_path.metadata() {
-                    let is_file = metadata.is_file();
-
-                    let is_executable = (metadata.permissions().mode() & 0o111) != 0;
-
-                    if is_file && is_executable {
-                        return Some(full_path);
-                    }
-                }
-                None
-            }).next()
-    })
-}
+use command::Command;
 
 fn main() {
     let builtin_commands: HashSet<&str> = vec!["echo", "exit", "type"].into_iter().collect();
@@ -66,7 +18,7 @@ fn main() {
             .read_line(&mut input)
             .unwrap();
         
-        let command = get_command(&input.as_str());
+        let command = command::parse(&input.as_str());
 
         match command {
             Command::CmdEcho(text) => {
@@ -78,7 +30,7 @@ fn main() {
             Command::CmdType(cmd) => {
                 if builtin_commands.contains(cmd.as_str()) {
                     println!("{} is a shell builtin", cmd)
-                } else if let Some(path) = find_executable(cmd.as_str()){
+                } else if let Some(path) = executable::find(cmd.as_str()){
                     // Get path
                     println!("{} is {}", cmd, path.display());
                 } else {
@@ -88,10 +40,8 @@ fn main() {
             Command::CmdExecutable(path, args) => {
                 use std::os::unix::process::CommandExt;  // Override argv[0]
 
-                let base_name = path.split('/').last().unwrap_or(&path);  // Extract base file from
-                                                                          // path such as
-                                                                          // "/usr/bin/cargo" ->
-                                                                          // "cargo"
+                // Extract base file from path such as "/usr/bin/cargo" -> "cargo"
+                let base_name = path.split('/').last().unwrap_or(&path);
 
                 let child = std::process::Command::new(&path)
                     .arg0(base_name)
