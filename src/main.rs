@@ -88,8 +88,13 @@ fn main() {
             Command::CmdExecutable(path, args) => {
                 use std::os::unix::process::CommandExt;  // Override argv[0]
 
+                let base_name = path.split('/').last().unwrap_or(&path);  // Extract base file from
+                                                                          // path such as
+                                                                          // "/usr/bin/cargo" ->
+                                                                          // "cargo"
+
                 let child = std::process::Command::new(&path)
-                    .arg0(args.get(0).copied().unwrap_or_else(|| path.split('/').last().unwrap_or(&path)))
+                    .arg0(base_name)
                     .args(&args)
                     .spawn();
 
