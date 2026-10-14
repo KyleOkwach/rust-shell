@@ -7,7 +7,7 @@ use std::io::{self, Write};
 use command::Command;
 
 fn main() {
-    let builtin_commands: HashSet<&str> = vec!["echo", "exit", "type"].into_iter().collect();
+    let builtin_commands: HashSet<&str> = vec!["echo", "exit", "type", "pwd"].into_iter().collect();
 
     loop {
         print!("$ ");
@@ -24,6 +24,10 @@ fn main() {
             Command::CmdEcho(text) => {
                 println!("{text}");
             },
+            Command::CmdPwd => {
+                let curr_dir = std::env::current_dir().unwrap();
+                println!("{:?}", curr_dir);
+            }
             Command::CmdInvalid(cmd) => {
                 println!("{}: command not found", cmd)
             },

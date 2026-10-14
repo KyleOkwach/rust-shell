@@ -5,6 +5,7 @@ pub enum Command<'a> {
     CmdInvalid(String),
     CmdExecutable(String, Vec<&'a str>),
     CmdType(String),
+    CmdPwd,
     CmdExit,
 }
 
@@ -18,6 +19,7 @@ pub fn parse(s: &str) -> Command<'_> {
         "echo"  => Command::CmdEcho(line_collection[1..].join(" ")),
         "exit"  => Command::CmdExit,
         "type"  => Command::CmdType(String::from(line_collection[1])),
+        "pwd"   => Command::CmdPwd,
         _       => {
             if let Some(path) = executable::find(cmd) {
                 let path_string = path.to_string_lossy().into_owned();
