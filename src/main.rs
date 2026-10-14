@@ -86,7 +86,10 @@ fn main() {
                 }
             },
             Command::CmdExecutable(path, args) => {
-                let child = std::process::Command::new(path)
+                use std::os::unix::process::CommandExt;  // Override argv[0]
+
+                let child = std::process::Command::new(&path)
+                    .arg0(args.get(0).copied().unwrap_or_else(|| path.split('/').last().unwrap_or(&path)))
                     .args(&args)
                     .spawn();
 
