@@ -1,14 +1,12 @@
 #[allow(unused_imports)]
 mod executable;
-mod command;
+mod commands;
 
-use std::collections::HashSet;
 use std::io::{self, Write};
-use command::Command;
+use commands::Command;
+use commands::BUILTIN;
 
 fn main() {
-    let builtin_commands: HashSet<&str> = vec!["echo", "exit", "type", "pwd"].into_iter().collect();
-
     loop {
         print!("$ ");
         io::stdout().flush().unwrap();
@@ -18,24 +16,19 @@ fn main() {
             .read_line(&mut input)
             .unwrap();
         
-        let command = command::parse(&input.as_str());
+        let command = commands::parse(&input.as_str());
 
         match command {
             Command::CmdEcho(text) => {
                 println!("{text}");
             },
-            Command::CmdPwd => {
-                let curr_dir = std::env::current_dir().unwrap();
-            
-                if let Some(path_str) = curr_dir.to_str() {
-                    println!("{}", path_str);
-                }
-            }
+            Command::CmdPwd => commands::print_working_directory(),
+            Command::CmdCd(cmd) => commands::change_directory(&cmd.as_str()),
             Command::CmdInvalid(cmd) => {
                 println!("{}: command not found", cmd)
             },
             Command::CmdType(cmd) => {
-                if builtin_commands.contains(cmd.as_str()) {
+                if BUILTIN.contains(&cmd.as_str()) {
                     println!("{} is a shell builtin", cmd)
                 } else if let Some(path) = executable::find(cmd.as_str()){
                     // Get path
