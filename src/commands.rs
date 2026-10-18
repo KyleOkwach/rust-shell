@@ -1,6 +1,5 @@
 use std::env;
 use std::path::Path;
-use std::io::Error;
 use crate::executable;
 
 pub enum Command<'a> {
