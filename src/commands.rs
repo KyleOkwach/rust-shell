@@ -54,6 +54,6 @@ pub fn change_directory(target_path: &str) {
             let Ok(current) = env::current_dir() else { todo!() };
         }
         Err(e) => {
-            eprintln!("cd: '{}': No such file or directory", String::from(target_path));
+            eprintln!("cd: {}: No such file or directory", String::from(target_path));
         }
     }}
