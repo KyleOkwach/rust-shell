@@ -46,14 +46,12 @@ pub fn print_working_directory() {
     }
 }
 
+
 pub fn change_directory(target_path: &str) {
     let root = Path::new(target_path);
 
-    match env::set_current_dir(&root) {
-        Ok(_) => {
-            let Ok(current) = env::current_dir() else { todo!() };
-        }
-        Err(e) => {
-            eprintln!("cd: {}: No such file or directory", String::from(target_path));
-        }
-    }}
+    if let Err(_e) = env::set_current_dir(&root) {
+        eprintln!("cd: {}: No such file or directory", String::from(target_path));
+    }
+}
+
